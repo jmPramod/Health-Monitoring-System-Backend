@@ -1,0 +1,310 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Health Care Management API Documentation",
+    "description": "API documentation for Health Care Management System",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://production-api.example.com",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "Endpoints for user authentication"
+    },
+    {
+      "name": "Dashboard",
+      "description": "Endpoints for managing Dashboard"
+    }
+  ],
+  "paths": {
+    "/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User registration",
+        "description": "Creates a new user account with the provided details.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "user",
+            "description": "User registration details",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RegisterUser"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User created successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "status": {
+                  "type": "integer",
+                  "example": 201
+                },
+                "message": {
+                  "type": "string",
+                  "example": "New User created"
+                },
+                "data": {
+                  "$ref": "#/definitions/UserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Validation failed"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "User already exists",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "message": {
+                  "type": "string",
+                  "example": "User already exists"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User login",
+        "description": "Authenticates a user with the provided credentials.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "login",
+            "description": "Login credentials",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginUser"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User logged in successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Login successful"
+                },
+                "token": {
+                  "type": "string",
+                  "example": "JWT_TOKEN_STRING"
+                },
+                "data": {
+                  "$ref": "#/definitions/UserResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Invalid email or password"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "RegisterUser": {
+      "type": "object",
+      "required": [
+        "firstName",
+        "phone",
+        "country",
+        "pinCode",
+        "email",
+        "password"
+      ],
+      "properties": {
+        "firstName": {
+          "type": "string",
+          "example": "John"
+        },
+        "lastName": {
+          "type": "string",
+          "example": "Doe"
+        },
+        "phone": {
+          "type": "number",
+          "example": 9876543210
+        },
+        "address": {
+          "type": "string",
+          "example": "123 Main Street"
+        },
+        "state": {
+          "type": "string",
+          "example": "Karnataka"
+        },
+        "country": {
+          "type": "string",
+          "example": "India"
+        },
+        "pinCode": {
+          "type": "number",
+          "example": 560001
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "john@example.com"
+        },
+        "password": {
+          "type": "string",
+          "format": "password",
+          "example": "SecurePassword123"
+        },
+        "isAdmin": {
+          "type": "string",
+          "enum": ["admin", "user"],
+          "default": "user",
+          "example": "user"
+        }
+      }
+    },
+    "LoginUser": {
+      "type": "object",
+      "required": ["email", "password"],
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "john@example.com"
+        },
+        "password": {
+          "type": "string",
+          "format": "password",
+          "example": "SecurePassword123"
+        }
+      }
+    },
+    "UserResponse": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "68a123456789abcdef123456"
+        },
+        "firstName": {
+          "type": "string",
+          "example": "John"
+        },
+        "lastName": {
+          "type": "string",
+          "example": "Doe"
+        },
+        "phone": {
+          "type": "number",
+          "example": 9876543210
+        },
+        "address": {
+          "type": "string",
+          "example": "123 Main Street"
+        },
+        "state": {
+          "type": "string",
+          "example": "Karnataka"
+        },
+        "country": {
+          "type": "string",
+          "example": "India"
+        },
+        "pinCode": {
+          "type": "number",
+          "example": 560001
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "john@example.com"
+        },
+        "isAdmin": {
+          "type": "string",
+          "example": "user"
+        },
+        "profileImage": {
+          "type": "string",
+          "example": "https://res.cloudinary.com/dtvq8ysaj/image/upload/v1749359927/Book-RN-Node-Web_Profile/uyygkmmetolf3nwn9oc0.png"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "JWTAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "JWT Authorization header using the Bearer scheme. Example: Authorization: Bearer <token>"
+    }
+  },
+  "security": [
+    {
+      "JWTAuth": []
+    }
+  ]
+}
