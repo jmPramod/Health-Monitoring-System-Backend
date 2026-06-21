@@ -18,6 +18,7 @@ export const runServer = async () => {
     cors({
       origin: [
         `http://localhost:${process.env.PORT}`,
+        "http://localhost/5173",
         process.env.FE_URL as string,
       ],
       credentials: true,
