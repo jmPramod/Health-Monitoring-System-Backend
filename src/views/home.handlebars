@@ -1,0 +1,279 @@
+<article class="pramod relative  w-full h-screen p-5 bg-[var(--bg)]">
+
+    <!-- Navbar -->
+    <div class="rounded-2xl border-[var(--border)] border p-2 bg-[var(--surface)]">
+        {{>_navbar}}
+    </div>
+
+    <!-- Content -->
+    <div class="p-5">
+        <div class="bg-[var(--surface)] text-[var(--text)] border border-[var(--border)] p-5 rounded">
+            <h1 class="text-2xl font-bold">Hello World</h1>
+        </div>
+
+
+
+        <button class="bg-[var(--primary)] text-white px-4 py-2 rounded">
+            Save
+        </button>
+
+        <div class="border-2 border-[var(--primary)] p-5 rounded">
+            Card
+        </div>
+
+        <i class="fa-solid fa-user text-[var(--primary)]"></i>
+    </div>
+
+    <!-- Gear Button -->
+    <button onclick="toggleSideBar()" class="fixed right-5 top-1/2 -translate-y-1/2 z-50
+               bg-[var(--primary)] hover:bg-gray-700
+               text-white p-3 rounded-xl shadow-lg">
+
+        <i class="fa-solid fa-gear text-xl"></i>
+
+    </button>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed top-0 right-0 z-50
+               h-screen w-80
+              
+              bg-[var(--surface)]
+               border-l
+               dark:border-slate-700
+               shadow-2xl
+
+               transform translate-x-full
+               transition-transform duration-300 ease-in-out">
+
+        <!-- Header -->
+        <div class=" realative flex justify-between items-center p-5 border-b dark:border-slate-700">
+
+            <div class="   text-[var(--text)] flex flex-col">
+                <h2 class="font-bold text-xl">
+
+                    Template Customizer
+                </h2>
+                <h6>Customize and preview in real time</h6>
+            </div>
+
+            <button onclick="toggleSideBar() " class="absolute top-2 right-2">
+                <i class="fa-solid fa-xmark text-2xl  text-[var(--text)]"></i>
+            </button>
+
+        </div>
+
+        <!-- Body -->
+        <div class="p-5 space-y-4">
+
+            <div class="w-full  rounded border-[var(--border)]   text-[var(--text)]">
+                <h2>
+
+                    Primary Color
+
+                </h2>
+                <div class="flex gap-3">
+
+                    <!-- Blue -->
+                    <div class="border rounded-lg p-2 hover:border-[white] "
+                        style="background: color-mix(in srgb, #696CFF 15%, transparent);">
+
+                        <button onclick="setPrimaryColor('#696CFF')"
+                            class="p-3  blue w-5 h-5  bg-[#696CFF] border-2  shadow cursor-pointer">
+                        </button>
+                    </div>
+
+                    <!-- Green -->
+                    <div class="border rounded-lg p-2 hover:border-[white]"
+                        style="background: color-mix(in srgb, #28C76F 15%, transparent);">
+
+                        <button onclick="setPrimaryColor('#28C76F')"
+                            class=" p-3  w-5 h-5rounded-lg bg-[#28C76F] border-2 shadow cursor-pointer">
+                        </button>
+
+                    </div>
+                    <div class="border rounded-lg p-2 hover:border-[white]"
+                        style="background: color-mix(in srgb, #FF9F43 15%, transparent);">
+
+                        <!-- Orange -->
+                        <button onclick="setPrimaryColor('#FF9F43')"
+                            class=" p-3 w-5 h-5rounded-lg bg-[#FF9F43] border-2 shadow cursor-pointer">
+                        </button>
+                    </div>
+                    <div class="border rounded-lg p-2 hover:border-[white]"
+                        style="background: color-mix(in srgb, #EA5455 15%, transparent);">
+
+                        <!-- Red -->
+                        <button onclick="setPrimaryColor('#EA5455')"
+                            class="p-3 w-5 h-5rounded-lg bg-[#EA5455] border-2 shadow cursor-pointer">
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <div class="w-full  rounded border-[var(--border)]   text-[var(--text)]">
+                <h2>
+
+                    Theme
+
+                </h2>
+                <div class="flex gap-3">
+                    <div class="w-full">
+
+                        <button class="dark-theme-button w-[100%] mt-5 border px-4 py-2 rounded  text-[var(--text)]"
+                            data-theme="dark"> <i class="fa-regular fa-moon"></i> </button>
+                        <p class=" text-[var(--text)]">Dark</p>
+                    </div>
+                    <div class="w-full">
+
+                        <button class="dark-theme-button w-[100%] mt-5 border px-4 py-2 rounded  text-[var(--text)]"
+                            data-theme="light"> <i class="fa-regular fa-sun"></i> </button>
+                        <p class=" text-[var(--text)]">Light</p>
+                    </div>
+                    <div class="w-full">
+
+                        <button class="dark-theme-button w-[100%] mt-5 border px-4 py-2 rounded  text-[var(--text)]"
+                            data-theme="system"> <i class="fa-solid fa-computer"></i> </button>
+                        <p class=" text-[var(--text)]">System</p>
+                    </div>
+                </div>
+            </div>
+
+            {{!-- <button class="w-full border rounded p-3  text-[var(--text)]">
+                Notifications
+            </button>
+
+            <button class="w-full border rounded p-3  text-[var(--text)]">
+                Logout
+            </button> --}}
+
+        </div>
+
+    </aside>
+
+</article>
+
+<script>
+
+// ==========================
+// Theme Manager
+// ==========================
+
+// <html> element
+const html = document.documentElement;
+
+// All theme buttons
+const themeButtons = document.querySelectorAll(".dark-theme-button");
+
+// ==========================
+// Apply Theme
+// ==========================
+function setTheme(theme) {
+  // Save user's choice
+  localStorage.setItem("theme", theme);
+
+  // Remove dark mode first
+  html.classList.remove("dark");
+
+  switch (theme) {
+    case "dark":
+      html.classList.add("dark");
+      break;
+
+    case "light":
+      // Light theme is the default (:root)
+      break;
+
+    case "system":
+      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        html.classList.add("dark");
+      }
+      break;
+  }
+}
+
+// ==========================
+// Highlight Selected Button
+// ==========================
+function updateActiveButton(theme) {
+  // Remove active class from every button
+  themeButtons.forEach((button) => {
+    button.classList.remove("isActive");
+  });
+
+  // Find clicked button
+  const activeButton = document.querySelector(`[data-theme="${theme}"]`);
+
+  // Add active class
+  if (activeButton) {
+    activeButton.classList.add("isActive");
+  }
+}
+
+// ==========================
+// Button Click Events
+// ==========================
+themeButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const theme = button.dataset.theme;
+
+    setTheme(theme);
+
+    updateActiveButton(theme);
+  });
+});
+
+// ==========================
+// System Theme Changed
+// ==========================
+window
+  .matchMedia("(prefers-color-scheme: dark)")
+  .addEventListener("change", () => {
+    const savedTheme = localStorage.getItem("theme");
+
+    if (savedTheme === "system") {
+      setTheme("system");
+    }
+  });
+
+// ==========================
+// Initial Load
+// ==========================
+const savedTheme = localStorage.getItem("theme") || "system";
+
+setTheme(savedTheme);
+
+updateActiveButton(savedTheme);
+
+// model open close
+
+
+    //setting icon model for  js 
+    const sidebar = document.getElementById("sidebar");
+
+    function toggleSideBar() {
+        sidebar.classList.toggle("translate-x-full");
+    }
+
+    function setPrimaryColor(color) {
+        document.documentElement.style.setProperty("--primary", color);
+
+        // Save user's choice
+        localStorage.setItem("primaryColor", color);
+    }
+
+    // Restore the color on page load
+    const savedColor = localStorage.getItem("primaryColor");
+
+    if (savedColor) {
+        setPrimaryColor(savedColor);
+    }
+</script>
+
+<style>
+    .isActive {
+        border: 2px solid var(--primary);
+        background-color: color-mix(in srgb, var(--primary) 15%, transparent);
+    }
+</style>

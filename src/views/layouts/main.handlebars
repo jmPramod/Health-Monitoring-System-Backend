@@ -1,0 +1,52 @@
+<html lang="en" class="light">
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin DashBoard</title>
+  </head>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class', }
+  </script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"
+  ></script>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+  />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <script>
+    gsap.to(".box", { x: 300, rotation: 360, duration: 2 });
+  </script>
+
+  <body>
+    <section class="realtive bg-[var(--surface)] w-full">
+
+      <main class="flex relative w-full">
+        <aside class="w-[20%] h-full">
+
+          {{>_sidebar}}
+        </aside>
+        <aside class="w-[80%]">
+
+          {{{body}}}
+        </aside>
+      </main>
+      <div
+        {{! style="background:rgba(0, 0, 0, 0.3)" }}
+        class="fixed border bg-[rgba(0,_0,_0,_0.3)] border-red h-[100vh] w-screen top-0 left-0 z-[51]  hidden" id="model-container"
+      >
+<div class="modal bg-white">
+
+        <button id="modelClose" class="modelClose">close</button>
+</div>
+      </div>
+
+    </section>
+
+  </body>
+  <script src="../../script/global.js"></script>
+
+</html>

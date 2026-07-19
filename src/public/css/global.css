@@ -1,0 +1,28 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+:root {
+  /* Light Theme */
+  --bg: #e7e7e7;
+  --surface: #f8f7fa;
+  --text: #2f3349;
+  --border: #d1d5db;
+  --primary: #2563eb;
+}
+.dark {
+  /* Dark Theme */
+  --bg: #0f172a;
+  --surface: #2f3349;
+  --sec-text: #cecce3;
+  --text: #f8f7fa;
+  --border: #4d4e50;
+  --primary: #3b82f6;
+}
+
+#model-container.show {
+  opacity: 1;
+  pointer-events: auto;
+  display: block;
+}

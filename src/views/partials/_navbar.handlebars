@@ -1,0 +1,41 @@
+<div
+  class="w-full px-6 flex items-center justify-between bg-[var(--surface)] rounded-2xl"
+>
+
+  <!-- Left Side (Search) -->
+  <div
+    class="flex items-center gap-3 text-[var(--sec-text)] cursor-pointer border"
+    id="modelOpen"
+  >
+    <i class="fa-solid fa-magnifying-glass text-lg"></i>
+    <span>Search...</span>
+  </div>
+
+  <!-- Right Side -->
+  <div class="flex items-center gap-6">
+
+    <!-- Theme Toggle -->
+    <button
+      id="themeToggle"
+      class="text-2xl text-[var(--sec-text)] hover:text-[var(--primary)] transition-colors duration-300 cursor-pointer"
+    >
+      <i class="fa-regular fa-moon"></i>
+    </button>
+
+    <!-- Profile -->
+    <div class="relative cursor-pointer">
+      <img
+        src="https://demos.pixinvent.com/vuexy-html-admin-template/assets/img/avatars/1.png"
+        alt="Profile"
+        class="w-12 h-12 rounded-full object-cover border-2 border-[var(--border)]"
+      />
+
+      <!-- Online Status -->
+      <span
+        class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-[var(--surface)]"
+      ></span>
+    </div>
+
+  </div>
+
+</div>
