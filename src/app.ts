@@ -13,6 +13,7 @@ import { connectMongooseDB } from "./config/db.config";
 import { ErrorHandelingMiddlewear } from "./middlewears/global.middlewear";
 import { authRoute } from "./routes/api/auth.routes";
 import { routesHb } from "./routes/hb/routes.hb";
+import { patientRoutes } from "./routes/api/patient.routes";
 
 dotenv.config();
 
@@ -90,6 +91,7 @@ export const runServer = async () => {
   console.log("After Mounting Handlebars routes...");
   // REST API
   app.use("/", authRoute);
+  app.use("/", patientRoutes);
 
   // -----------------------------
   // Error Handler

@@ -19,6 +19,10 @@
     {
       "name": "Dashboard",
       "description": "Endpoints for managing Dashboard"
+    },
+    {
+      "name": "Patient",
+      "description": "Patient Management APIs"
     }
   ],
   "paths": {
@@ -159,6 +163,181 @@
           }
         }
       }
+    },
+    "/patient": {
+      "post": {
+        "tags": ["Patient"],
+        "summary": "Create Patient",
+        "description": "Creates a new patient record.",
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ],
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "patient",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PatientResponse"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Patient created successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "status": {
+                  "type": "integer",
+                  "example": 201
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Patient created successfully"
+                },
+                "data": {
+                  "$ref": "#/definitions/PatientResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation Error"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/patient-list": {
+      "get": {
+        "tags": ["Patient"],
+        "summary": "Get Patient List",
+        "description": "Returns a paginated list of patients.",
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "type": "integer",
+            "default": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of records per page",
+            "required": false,
+            "type": "integer",
+            "default": 10
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Patients fetched successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "status": {
+                  "type": "integer",
+                  "example": 200
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Patients fetched successfully"
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "patient_id": {
+                        "type": "string",
+                        "example": "PAT000001"
+                      },
+                      "registration_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2026-07-31T10:30:00.000Z"
+                      },
+                      "firstName": {
+                        "type": "string",
+                        "example": "John"
+                      },
+                      "last_name": {
+                        "type": "string",
+                        "example": "Doe"
+                      },
+                      "mobile_no": {
+                        "type": "string",
+                        "example": "9876543210"
+                      }
+                    }
+                  }
+                },
+                "pagination": {
+                  "type": "object",
+                  "properties": {
+                    "totalRecords": {
+                      "type": "integer",
+                      "example": 100
+                    },
+                    "currentPage": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "totalPages": {
+                      "type": "integer",
+                      "example": 10
+                    },
+                    "limit": {
+                      "type": "integer",
+                      "example": 10
+                    },
+                    "hasNextPage": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "hasPreviousPage": {
+                      "type": "boolean",
+                      "example": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -290,6 +469,193 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "CreatePatient": {
+      "type": "object",
+      "required": [
+        "hospital_id",
+        "firstName",
+        "age",
+        "gender",
+        "blood_group",
+        "mobile_no",
+        "city",
+        "district",
+        "state"
+      ],
+      "properties": {
+        "hospital_id": {
+          "type": "string"
+        },
+        "patient_id": {
+          "type": "string"
+        },
+        "name_titles": {
+          "type": "string",
+          "enum": ["Mr", "Mrs", "Miss", "Ms", "Dr", "Master", "Baby"],
+          "default": "Mr"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "registration_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "age": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 120
+        },
+        "gender": {
+          "type": "string",
+          "enum": ["Male", "Female", "Other"]
+        },
+        "blood_group": {
+          "type": "string",
+          "enum": ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+        },
+        "mobile_no": {
+          "type": "string"
+        },
+        "id_proof": {
+          "type": "string"
+        },
+        "ocupation": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "district": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "pin_code": {
+          "type": "integer"
+        },
+        "link_others": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "example": {
+        "hospital_id": "68b1d92f65d84c8fbf89abcd",
+        "firstName": "John",
+        "age": 30,
+        "gender": "Male",
+        "blood_group": "O+",
+        "mobile_no": "9876543210",
+        "city": "Bangalore",
+        "district": "Bangalore Urban",
+        "state": "Karnataka"
+      }
+    },
+    "PatientResponse": {
+      "type": "object",
+      "properties": {
+        "hospital_id": {
+          "type": "string",
+          "example": "68b1d92f65d84c8fbf89abcd"
+        },
+        "firstName": {
+          "type": "string",
+          "example": "John"
+        },
+        "age": {
+          "type": "integer",
+          "example": 30
+        },
+        "gender": {
+          "type": "string",
+          "example": "Male"
+        },
+        "blood_group": {
+          "type": "string",
+          "example": "O+"
+        },
+        "mobile_no": {
+          "type": "string",
+          "example": "9876543210"
+        },
+        "city": {
+          "type": "string",
+          "example": "Bangalore"
+        },
+        "district": {
+          "type": "string",
+          "example": "Bangalore Urban"
+        },
+        "state": {
+          "type": "string",
+          "example": "Karnataka"
+        }
+      }
+    },
+    "PatientList": {
+      "type": "object",
+      "properties": {
+        "patient_id": {
+          "type": "string",
+          "example": "PAT000001"
+        },
+        "registration_date": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2026-07-31T10:30:00.000Z"
+        },
+        "firstName": {
+          "type": "string",
+          "example": "John"
+        },
+        "last_name": {
+          "type": "string",
+          "example": "Doe"
+        },
+        "mobile_no": {
+          "type": "string",
+          "example": "9876543210"
+        }
+      }
+    },
+    "Pagination": {
+      "type": "object",
+      "properties": {
+        "totalRecords": {
+          "type": "integer",
+          "example": 125
+        },
+        "currentPage": {
+          "type": "integer",
+          "example": 1
+        },
+        "totalPages": {
+          "type": "integer",
+          "example": 13
+        },
+        "limit": {
+          "type": "integer",
+          "example": 10
+        },
+        "hasNextPage": {
+          "type": "boolean",
+          "example": true
+        },
+        "hasPreviousPage": {
+          "type": "boolean",
+          "example": false
         }
       }
     }

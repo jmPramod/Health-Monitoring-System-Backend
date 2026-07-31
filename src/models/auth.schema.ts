@@ -13,6 +13,7 @@ export interface Auth extends Document {
   password: string;
   isAdmin: string;
   profileImage: string;
+  role: string;
 }
 
 const authSchema: Schema = new Schema(
@@ -27,6 +28,18 @@ const authSchema: Schema = new Schema(
     email: { type: String },
     password: { type: String },
     isAdmin: { type: String, enum: ["admin", "user"], default: "user" },
+    role: {
+      type: String,
+      enum: [
+        "super_admin",
+        "admin",
+        "receptionist",
+        "doctor",
+        "pharmacist",
+        "lab_technician",
+      ],
+      default: "",
+    },
     profileImage: {
       type: String,
       default:
