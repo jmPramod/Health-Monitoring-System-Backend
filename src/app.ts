@@ -14,12 +14,7 @@ import { ErrorHandelingMiddlewear } from "./middlewears/global.middlewear";
 import { authRoute } from "./routes/api/auth.routes";
 import { routesHb } from "./routes/hb/routes.hb";
 import { patientRoutes } from "./routes/api/patient.routes";
-// import * as swaggerDocument from "./config/swagger.json";
-console.log(
-  "Patient body has fields:",
-  Object.keys((swaggerDocument as any).definitions.CreatePatient.properties)
-    .length,
-);
+
 dotenv.config();
 
 export const app = express();
