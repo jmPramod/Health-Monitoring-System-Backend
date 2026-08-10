@@ -11,6 +11,7 @@ export const createPatientController = async (
 ) => {
   try {
     const { mobile_no } = req.body;
+    req.body.hospital_id = "68b1d92f65d84c8fbf89abcd";
     const existing_user = await patientSchema.findOne({ mobile_no });
     if (existing_user) {
       return next(createError(401, "mobile number already exist"));
