@@ -1,16 +1,16 @@
 {
   "swagger": "2.0",
+
   "info": {
     "title": "Health Care Management API Documentation",
     "description": "API documentation for Health Care Management System",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "https://production-api.example.com",
-      "description": "Production server"
-    }
-  ],
+
+  "host": "localhost:4500",
+  "basePath": "/",
+  "schemes": ["http"],
+
   "tags": [
     {
       "name": "Authentication",
@@ -25,6 +25,7 @@
       "description": "Patient Management APIs"
     }
   ],
+
   "paths": {
     "/register": {
       "post": {
@@ -33,6 +34,7 @@
         "description": "Creates a new user account with the provided details.",
         "consumes": ["application/json"],
         "produces": ["application/json"],
+
         "parameters": [
           {
             "in": "body",
@@ -44,6 +46,7 @@
             }
           }
         ],
+
         "responses": {
           "201": {
             "description": "User created successfully",
@@ -68,41 +71,18 @@
               }
             }
           },
+
           "400": {
-            "description": "Validation error",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "success": {
-                  "type": "boolean",
-                  "example": false
-                },
-                "message": {
-                  "type": "string",
-                  "example": "Validation failed"
-                }
-              }
-            }
+            "description": "Validation error"
           },
+
           "409": {
-            "description": "User already exists",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "success": {
-                  "type": "boolean",
-                  "example": false
-                },
-                "message": {
-                  "type": "string",
-                  "example": "User already exists"
-                }
-              }
-            }
+            "description": "User already exists"
           }
         }
       }
     },
+
     "/login": {
       "post": {
         "tags": ["Authentication"],
@@ -110,6 +90,7 @@
         "description": "Authenticates a user with the provided credentials.",
         "consumes": ["application/json"],
         "produces": ["application/json"],
+
         "parameters": [
           {
             "in": "body",
@@ -121,6 +102,7 @@
             }
           }
         ],
+
         "responses": {
           "200": {
             "description": "User logged in successfully",
@@ -145,35 +127,20 @@
               }
             }
           },
+
           "401": {
-            "description": "Invalid credentials",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "success": {
-                  "type": "boolean",
-                  "example": false
-                },
-                "message": {
-                  "type": "string",
-                  "example": "Invalid email or password"
-                }
-              }
-            }
+            "description": "Invalid credentials"
           }
         }
       }
     },
+
     "/patient": {
       "post": {
         "tags": ["Patient"],
         "summary": "Create Patient",
         "description": "Creates a new patient record.",
-        "security": [
-          {
-            "JWTAuth": []
-          }
-        ],
+        "security": [{ "JWTAuth": [] }],
         "consumes": ["application/json"],
         "produces": ["application/json"],
         "parameters": [
@@ -181,44 +148,118 @@
             "in": "body",
             "name": "patient",
             "required": true,
-            "schema": {
-              "$ref": "#/definitions/PatientResponse"
-            }
+            "description": "Complete patient creation details",
+            "schema": { "$ref": "#/definitions/CreatePatient" }
           }
         ],
         "responses": {
           "201": {
             "description": "Patient created successfully",
+            "schema": { "$ref": "#/definitions/CreatePatientResponse" }
+          },
+          "400": { "description": "Validation Error" },
+          "401": { "description": "Unauthorized" },
+          "500": { "description": "Internal Server Error" }
+        }
+      }
+    },
+
+    "/patient/{id}": {
+      "get": {
+        "tags": ["Patient"],
+        "summary": "Get Patient by ID",
+        "description": "Fetches a single patient record by MongoDB ObjectId.",
+        "security": [{ "JWTAuth": [] }],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Patient MongoDB ObjectId",
+            "example": "68b1d92f65d84c8fbf89abce"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Patient fetched successfully",
+            "schema": { "$ref": "#/definitions/CreatePatientResponse" }
+          },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Patient not found" },
+          "500": { "description": "Internal Server Error" }
+        }
+      },
+
+      "put": {
+        "tags": ["Patient"],
+        "summary": "Update Patient",
+        "description": "Updates an existing patient record by MongoDB ObjectId.",
+        "security": [{ "JWTAuth": [] }],
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "68b1d92f65d84c8fbf89abce"
+          },
+          {
+            "in": "body",
+            "name": "patient",
+            "required": true,
+            "description": "Fields to update",
+            "schema": { "$ref": "#/definitions/CreatePatient" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Patient updated successfully",
+            "schema": { "$ref": "#/definitions/CreatePatientResponse" }
+          },
+          "400": { "description": "Validation Error" },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Patient not found" },
+          "500": { "description": "Internal Server Error" }
+        }
+      },
+
+      "delete": {
+        "tags": ["Patient"],
+        "summary": "Delete Patient",
+        "description": "Deletes a patient record by MongoDB ObjectId.",
+        "security": [{ "JWTAuth": [] }],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "68b1d92f65d84c8fbf89abce"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Patient deleted successfully",
             "schema": {
               "type": "object",
               "properties": {
-                "success": {
-                  "type": "boolean",
-                  "example": true
-                },
-                "status": {
-                  "type": "integer",
-                  "example": 201
-                },
+                "success": { "type": "boolean", "example": true },
+                "status": { "type": "integer", "example": 200 },
                 "message": {
                   "type": "string",
-                  "example": "Patient created successfully"
-                },
-                "data": {
-                  "$ref": "#/definitions/PatientResponse"
+                  "example": "Patient deleted successfully"
                 }
               }
             }
           },
-          "400": {
-            "description": "Validation Error"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          }
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Patient not found" },
+          "500": { "description": "Internal Server Error" }
         }
       }
     },
@@ -227,12 +268,15 @@
         "tags": ["Patient"],
         "summary": "Get Patient List",
         "description": "Returns a paginated list of patients.",
+
         "security": [
           {
             "JWTAuth": []
           }
         ],
+
         "produces": ["application/json"],
+
         "parameters": [
           {
             "name": "page",
@@ -240,6 +284,7 @@
             "description": "Page number",
             "required": false,
             "type": "integer",
+            "minimum": 1,
             "default": 1
           },
           {
@@ -248,91 +293,24 @@
             "description": "Number of records per page",
             "required": false,
             "type": "integer",
+            "minimum": 1,
             "default": 10
           }
         ],
+
         "responses": {
           "200": {
             "description": "Patients fetched successfully",
+
             "schema": {
-              "type": "object",
-              "properties": {
-                "success": {
-                  "type": "boolean",
-                  "example": true
-                },
-                "status": {
-                  "type": "integer",
-                  "example": 200
-                },
-                "message": {
-                  "type": "string",
-                  "example": "Patients fetched successfully"
-                },
-                "data": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "patient_id": {
-                        "type": "string",
-                        "example": "PAT000001"
-                      },
-                      "registration_date": {
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2026-07-31T10:30:00.000Z"
-                      },
-                      "firstName": {
-                        "type": "string",
-                        "example": "John"
-                      },
-                      "last_name": {
-                        "type": "string",
-                        "example": "Doe"
-                      },
-                      "mobile_no": {
-                        "type": "string",
-                        "example": "9876543210"
-                      }
-                    }
-                  }
-                },
-                "pagination": {
-                  "type": "object",
-                  "properties": {
-                    "totalRecords": {
-                      "type": "integer",
-                      "example": 100
-                    },
-                    "currentPage": {
-                      "type": "integer",
-                      "example": 1
-                    },
-                    "totalPages": {
-                      "type": "integer",
-                      "example": 10
-                    },
-                    "limit": {
-                      "type": "integer",
-                      "example": 10
-                    },
-                    "hasNextPage": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "hasPreviousPage": {
-                      "type": "boolean",
-                      "example": false
-                    }
-                  }
-                }
-              }
+              "$ref": "#/definitions/PatientListResponse"
             }
           },
+
           "401": {
             "description": "Unauthorized"
           },
+
           "500": {
             "description": "Internal Server Error"
           }
@@ -340,9 +318,11 @@
       }
     }
   },
+
   "definitions": {
     "RegisterUser": {
       "type": "object",
+
       "required": [
         "firstName",
         "phone",
@@ -351,45 +331,55 @@
         "email",
         "password"
       ],
+
       "properties": {
         "firstName": {
           "type": "string",
           "example": "John"
         },
+
         "lastName": {
           "type": "string",
           "example": "Doe"
         },
+
         "phone": {
           "type": "number",
           "example": 9876543210
         },
+
         "address": {
           "type": "string",
           "example": "123 Main Street"
         },
+
         "state": {
           "type": "string",
           "example": "Karnataka"
         },
+
         "country": {
           "type": "string",
           "example": "India"
         },
+
         "pinCode": {
           "type": "number",
           "example": 560001
         },
+
         "email": {
           "type": "string",
           "format": "email",
           "example": "john@example.com"
         },
+
         "password": {
           "type": "string",
           "format": "password",
           "example": "SecurePassword123"
         },
+
         "isAdmin": {
           "type": "string",
           "enum": ["admin", "user"],
@@ -398,15 +388,19 @@
         }
       }
     },
+
     "LoginUser": {
       "type": "object",
+
       "required": ["email", "password"],
+
       "properties": {
         "email": {
           "type": "string",
           "format": "email",
           "example": "john@example.com"
         },
+
         "password": {
           "type": "string",
           "format": "password",
@@ -414,66 +408,84 @@
         }
       }
     },
+
     "UserResponse": {
       "type": "object",
+
       "properties": {
         "_id": {
           "type": "string",
           "example": "68a123456789abcdef123456"
         },
+
         "firstName": {
           "type": "string",
           "example": "John"
         },
+
         "lastName": {
           "type": "string",
           "example": "Doe"
         },
+
         "phone": {
           "type": "number",
           "example": 9876543210
         },
+
         "address": {
           "type": "string",
           "example": "123 Main Street"
         },
+
         "state": {
           "type": "string",
           "example": "Karnataka"
         },
+
         "country": {
           "type": "string",
           "example": "India"
         },
+
         "pinCode": {
           "type": "number",
           "example": 560001
         },
+
         "email": {
           "type": "string",
           "format": "email",
           "example": "john@example.com"
         },
+
         "isAdmin": {
           "type": "string",
           "example": "user"
         },
+
         "profileImage": {
           "type": "string",
-          "example": "https://res.cloudinary.com/dtvq8ysaj/image/upload/v1749359927/Book-RN-Node-Web_Profile/uyygkmmetolf3nwn9oc0.png"
+          "example": "profile-image-url"
         },
+
         "createdAt": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "example": "2026-08-10T09:30:00.000Z"
         },
+
         "updatedAt": {
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "example": "2026-08-10T09:30:00.000Z"
         }
       }
     },
+
     "CreatePatient": {
       "type": "object",
+
       "required": [
         "hospital_id",
         "firstName",
@@ -485,174 +497,379 @@
         "district",
         "state"
       ],
+
       "properties": {
         "hospital_id": {
-          "type": "string"
+          "type": "string",
+          "description": "MongoDB ObjectId of hospital",
+          "example": "68b1d92f65d84c8fbf89abcd"
         },
+
         "patient_id": {
-          "type": "string"
+          "type": "string",
+          "description": "Patient ID",
+          "example": "PAT000001"
         },
+
         "name_titles": {
           "type": "string",
           "enum": ["Mr", "Mrs", "Miss", "Ms", "Dr", "Master", "Baby"],
-          "default": "Mr"
+          "default": "Mr",
+          "example": "Mr"
         },
-        "firstName": {
-          "type": "string"
-        },
-        "last_name": {
-          "type": "string"
-        },
-        "registration_date": {
-          "type": "string",
-          "format": "date"
-        },
-        "age": {
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 120
-        },
-        "gender": {
-          "type": "string",
-          "enum": ["Male", "Female", "Other"]
-        },
-        "blood_group": {
-          "type": "string",
-          "enum": ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
-        },
-        "mobile_no": {
-          "type": "string"
-        },
-        "id_proof": {
-          "type": "string"
-        },
-        "ocupation": {
-          "type": "string"
-        },
-        "address": {
-          "type": "string"
-        },
-        "city": {
-          "type": "string"
-        },
-        "district": {
-          "type": "string"
-        },
-        "state": {
-          "type": "string"
-        },
-        "pin_code": {
-          "type": "integer"
-        },
-        "link_others": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "example": {
-        "hospital_id": "68b1d92f65d84c8fbf89abcd",
-        "firstName": "John",
-        "age": 30,
-        "gender": "Male",
-        "blood_group": "O+",
-        "mobile_no": "9876543210",
-        "city": "Bangalore",
-        "district": "Bangalore Urban",
-        "state": "Karnataka"
-      }
-    },
-    "PatientResponse": {
-      "type": "object",
-      "properties": {
-        "hospital_id": {
-          "type": "string",
-          "example": "68b1d92f65d84c8fbf89abcd"
-        },
+
         "firstName": {
           "type": "string",
           "example": "John"
         },
+
+        "last_name": {
+          "type": "string",
+          "example": "Doe"
+        },
+
+        "registration_date": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2026-08-10T09:30:00.000Z"
+        },
+
         "age": {
           "type": "integer",
+          "minimum": 0,
+          "maximum": 120,
           "example": 30
         },
+
         "gender": {
           "type": "string",
+          "enum": ["Male", "Female", "Other"],
           "example": "Male"
         },
+
         "blood_group": {
           "type": "string",
+          "enum": ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
           "example": "O+"
         },
+
         "mobile_no": {
           "type": "string",
           "example": "9876543210"
         },
+
+        "id_proof": {
+          "type": "string",
+          "example": "123456789012"
+        },
+
+        "ocupation": {
+          "type": "string",
+          "example": "Software Engineer"
+        },
+
+        "address": {
+          "type": "string",
+          "example": "123 Main Street"
+        },
+
         "city": {
           "type": "string",
           "example": "Bangalore"
         },
+
         "district": {
           "type": "string",
           "example": "Bangalore Urban"
         },
+
         "state": {
           "type": "string",
           "example": "Karnataka"
+        },
+
+        "pin_code": {
+          "type": "integer",
+          "example": 560001
+        },
+
+        "link_others": {
+          "type": "array",
+          "description": "Related patient MongoDB ObjectIds",
+
+          "items": {
+            "type": "string",
+            "pattern": "^[a-fA-F0-9]{24}$"
+          },
+
+          "example": []
+        }
+      },
+
+      "example": {
+        "hospital_id": "68b1d92f65d84c8fbf89abcd",
+        "patient_id": "PAT000001",
+        "name_titles": "Mr",
+        "firstName": "John",
+        "last_name": "Doe",
+        "registration_date": "2026-08-10T09:30:00.000Z",
+        "age": 30,
+        "gender": "Male",
+        "blood_group": "O+",
+        "mobile_no": "9876543210",
+        "id_proof": "123456789012",
+        "ocupation": "Software Engineer",
+        "address": "123 Main Street",
+        "city": "Bangalore",
+        "district": "Bangalore Urban",
+        "state": "Karnataka",
+        "pin_code": 560001,
+        "link_others": []
+      }
+    },
+
+    "PatientResponse": {
+      "type": "object",
+
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "68b1d92f65d84c8fbf89abce"
+        },
+
+        "hospital_id": {
+          "type": "string",
+          "example": "68b1d92f65d84c8fbf89abcd"
+        },
+
+        "patient_id": {
+          "type": "string",
+          "example": "PAT000001"
+        },
+
+        "name_titles": {
+          "type": "string",
+          "enum": ["Mr", "Mrs", "Miss", "Ms", "Dr", "Master", "Baby"],
+          "example": "Mr"
+        },
+
+        "firstName": {
+          "type": "string",
+          "example": "John"
+        },
+
+        "last_name": {
+          "type": "string",
+          "example": "Doe"
+        },
+
+        "registration_date": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2026-08-10T09:30:00.000Z"
+        },
+
+        "age": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 120,
+          "example": 30
+        },
+
+        "gender": {
+          "type": "string",
+          "enum": ["Male", "Female", "Other"],
+          "example": "Male"
+        },
+
+        "blood_group": {
+          "type": "string",
+          "enum": ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+          "example": "O+"
+        },
+
+        "mobile_no": {
+          "type": "string",
+          "example": "9876543210"
+        },
+
+        "id_proof": {
+          "type": "string",
+          "example": "123456789012"
+        },
+
+        "ocupation": {
+          "type": "string",
+          "example": "Software Engineer"
+        },
+
+        "address": {
+          "type": "string",
+          "example": "123 Main Street"
+        },
+
+        "city": {
+          "type": "string",
+          "example": "Bangalore"
+        },
+
+        "district": {
+          "type": "string",
+          "example": "Bangalore Urban"
+        },
+
+        "state": {
+          "type": "string",
+          "example": "Karnataka"
+        },
+
+        "pin_code": {
+          "type": "integer",
+          "example": 560001
+        },
+
+        "link_others": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-fA-F0-9]{24}$"
+          },
+          "example": []
+        },
+
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2026-08-10T09:30:00.000Z"
+        },
+
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2026-08-10T09:30:00.000Z"
         }
       }
     },
+
+    "CreatePatientResponse": {
+      "type": "object",
+
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+
+        "status": {
+          "type": "integer",
+          "example": 201
+        },
+
+        "message": {
+          "type": "string",
+          "example": "Patient created successfully"
+        },
+
+        "data": {
+          "$ref": "#/definitions/PatientResponse"
+        }
+      }
+    },
+
     "PatientList": {
       "type": "object",
+
       "properties": {
         "patient_id": {
           "type": "string",
           "example": "PAT000001"
         },
+
         "registration_date": {
           "type": "string",
           "format": "date-time",
-          "example": "2026-07-31T10:30:00.000Z"
+          "example": "2026-08-10T09:30:00.000Z"
         },
+
         "firstName": {
           "type": "string",
           "example": "John"
         },
+
         "last_name": {
           "type": "string",
           "example": "Doe"
         },
+
         "mobile_no": {
           "type": "string",
           "example": "9876543210"
         }
       }
     },
+
+    "PatientListResponse": {
+      "type": "object",
+
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        },
+
+        "status": {
+          "type": "integer",
+          "example": 200
+        },
+
+        "message": {
+          "type": "string",
+          "example": "Patients fetched successfully"
+        },
+
+        "data": {
+          "type": "array",
+
+          "items": {
+            "$ref": "#/definitions/PatientList"
+          }
+        },
+
+        "pagination": {
+          "$ref": "#/definitions/Pagination"
+        }
+      }
+    },
+
     "Pagination": {
       "type": "object",
+
       "properties": {
         "totalRecords": {
           "type": "integer",
           "example": 125
         },
+
         "currentPage": {
           "type": "integer",
           "example": 1
         },
+
         "totalPages": {
           "type": "integer",
           "example": 13
         },
+
         "limit": {
           "type": "integer",
           "example": 10
         },
+
         "hasNextPage": {
           "type": "boolean",
           "example": true
         },
+
         "hasPreviousPage": {
           "type": "boolean",
           "example": false
@@ -660,6 +877,7 @@
       }
     }
   },
+
   "securityDefinitions": {
     "JWTAuth": {
       "type": "apiKey",
@@ -668,6 +886,7 @@
       "description": "JWT Authorization header using the Bearer scheme. Example: Authorization: Bearer <token>"
     }
   },
+
   "security": [
     {
       "JWTAuth": []

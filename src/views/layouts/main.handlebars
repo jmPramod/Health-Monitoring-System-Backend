@@ -1,52 +1,54 @@
 <html lang="en" class="light">
 
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin DashBoard</title>
-  </head>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = { darkMode: 'class', }
-  </script>
-  <script
-    src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"
-  ></script>
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
-  />
-  <link rel="stylesheet" href="../../css/global.css" />
-  <script>
-    gsap.to(".box", { x: 300, rotation: 360, duration: 2 });
-  </script>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin DashBoard</title>
+</head>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { darkMode: 'class', }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+<link rel="stylesheet" href="../../css/global.css" />
+<script>
+  gsap.to(".box", { x: 300, rotation: 360, duration: 2 });
+</script>
 
-  <body>
-    <section class="realtive bg-[var(--surface)] w-full">
+<body>
+  <section class="realtive bg-[var(--surface)] w-full">
 
-      <main class="flex relative w-full">
-        <aside class="w-[20%] h-full">
+    <main class="flex relative w-full">
+      <aside class="w-[20%] h-full">
 
-          {{>_sidebar}}
-        </aside>
-        <aside class="w-[80%]">
+        {{>_sidebar}}
+      </aside>
+      <aside class="w-[80%]">
 
-          {{{body}}}
-        </aside>
-      </main>
+        {{{body}}}
+      </aside>
+    </main>
+  <div id="model-container"
+     class="fixed inset-0 z-[51] hidden items-center justify-center bg-black/30">
       <div
-        {{! style="background:rgba(0, 0, 0, 0.3)" }}
-        class="fixed border bg-[rgba(0,_0,_0,_0.3)] border-red h-[100vh] w-screen top-0 left-0 z-[51]  hidden" id="model-container"
-      >
-<div class="modal bg-white">
+        class="bg-[var(--surface)] border border-[var(--border)] w-[40%] max-w-[700px] h-[500px] p-4 rounded-lg relative">
 
-        <button id="modelClose" class="modelClose">close</button>
-</div>
+        <div class="flex items-center gap-3 text-[var(--sec-text)] cursor-pointer">
+          <i class="fa-solid fa-magnifying-glass text-lg"></i>
+          <span>Search...</span>
+        </div>
+
+        <button id="modelClose" class="absolute top-3 right-3 text-[var(--primary)]">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
       </div>
+    </div>
 
-    </section>
+  </section>
 
-  </body>
-  <script src="../../script/global.js"></script>
+</body>
+<script src="../../script/global.js"></script>
 
 </html>

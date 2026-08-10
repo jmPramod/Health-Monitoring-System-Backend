@@ -1,12 +1,48 @@
-<div class="h-[100vh] border border-width-[10px] sticky p-5">
-  <aside>
+<div
+  class="h-screen sticky top-0 p-4 bg-[var(--surface)] border-r border-[var(--border)] shadow-sm flex flex-col"
+>
+  <aside class="flex flex-col h-full">
 
-    <div class="flex items-center justify-center border p-4 m-4 h-10 gap-3">
-      {{! <img src="" alt="logo" /> }}
-      <i class="fa-solid fa-pen-fancy"></i>
-      <h3>Admin</h3>
+    <!-- Logo / Header -->
+    <div
+      class="flex items-center gap-3 px-4 py-4 mb-8 rounded-2xl bg-[var(--bg)] border border-[var(--border)]"
+    >
+      <div
+        class="w-10 h-10 rounded-xl bg-[var(--primary)]/10 flex items-center justify-center"
+      >
+        <i class="fa-solid fa-pen-fancy text-[var(--primary)] text-lg"></i>
+      </div>
+      <div>
+        <h3 class="text-[var(--text)] font-semibold text-lg leading-tight">Admin
+          Panel</h3>
+        <p
+          class="text-xs text-gray-500 dark:text-gray-400 leading-tight"
+        >Management</p>
+      </div>
     </div>
-    <div>icon</div>
-  </aside>
 
+    <!-- Navigation -->
+    <nav class="flex-1 space-y-2">
+
+      <!-- Active Item -->
+      <a
+        href="#"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl bg-[var(--primary)] text-white shadow-md transition-all duration-200"
+      >
+        <i class="fa-solid fa-house w-5 text-center"></i>
+        <span class="font-medium">Dashboard</span>
+      </a>
+
+      <!-- Normal Item -->
+      <a
+        href="#"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--text)] hover:bg-[var(--bg)] hover:shadow-sm transition-all duration-200"
+      >
+        <i class="fa-solid fa-users w-5 text-center text-[var(--primary)]"></i>
+        <span class="font-medium">Users</span>
+      </a>
+
+    </nav>
+
+  </aside>
 </div>
