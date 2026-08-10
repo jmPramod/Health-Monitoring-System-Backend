@@ -600,7 +600,6 @@
       },
 
       "example": {
-        "patient_id": "PAT000001",
         "name_titles": "Mr",
         "firstName": "John",
         "last_name": "Doe",
