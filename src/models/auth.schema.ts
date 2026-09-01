@@ -38,7 +38,6 @@ const authSchema: Schema = new Schema(
         "pharmacist",
         "lab_technician",
       ],
-      default: "",
     },
     profileImage: {
       type: String,

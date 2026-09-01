@@ -46,7 +46,11 @@ export const runServer = async () => {
 
   app.use(
     cors({
-      origin: ["http://localhost:5173", process.env.FE_URL || ""],
+      origin: [
+        "http://localhost:5173",
+        "http://localhost:4500",
+        process.env.FE_URL || "",
+      ],
       credentials: true,
     }),
   );
