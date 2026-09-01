@@ -1,12 +1,10 @@
 {
   "openapi": "3.0.3",
-
   "info": {
     "title": "Health Care Management API Documentation",
     "description": "API documentation for Health Care Management System",
     "version": "1.0.0"
   },
-
   "servers": [
     {
       "url": "http://localhost:4500",
@@ -17,7 +15,6 @@
       "description": "Production server"
     }
   ],
-
   "tags": [
     {
       "name": "Authentication",
@@ -32,7 +29,6 @@
       "description": "Patient Management APIs"
     }
   ],
-
   "paths": {
     "/register": {
       "post": {
@@ -87,7 +83,6 @@
         }
       }
     },
-
     "/login": {
       "post": {
         "tags": ["Authentication"],
@@ -138,7 +133,6 @@
         }
       }
     },
-
     "/patient": {
       "post": {
         "tags": ["Patient"],
@@ -171,7 +165,6 @@
         }
       }
     },
-
     "/patient/{id}": {
       "get": {
         "tags": ["Patient"],
@@ -204,7 +197,6 @@
           "500": { "description": "Internal Server Error" }
         }
       },
-
       "put": {
         "tags": ["Patient"],
         "summary": "Update Patient",
@@ -245,7 +237,6 @@
           "500": { "description": "Internal Server Error" }
         }
       },
-
       "delete": {
         "tags": ["Patient"],
         "summary": "Delete Patient",
@@ -285,12 +276,11 @@
         }
       }
     },
-
     "/patient-list": {
       "get": {
         "tags": ["Patient"],
         "summary": "Get Patient List",
-        "description": "Returns a paginated list of patients.",
+        "description": "Returns a paginated and filterable list of patients.",
         "security": [
           {
             "JWTAuth": []
@@ -300,7 +290,7 @@
           {
             "name": "page",
             "in": "query",
-            "description": "Page number",
+            "description": "Page number for pagination",
             "required": false,
             "schema": {
               "type": "integer",
@@ -318,6 +308,58 @@
               "minimum": 1,
               "default": 10
             }
+          },
+          {
+            "name": "patient_id",
+            "in": "query",
+            "description": "Filter by patient ID (case-insensitive partial match)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "PAT-000001"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Filter by first name or last name (case-insensitive partial match)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "John"
+          },
+          {
+            "name": "mobile_no",
+            "in": "query",
+            "description": "Filter by mobile number (case-insensitive partial match)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "9876543210"
+          },
+          {
+            "name": "registration_date_from",
+            "in": "query",
+            "description": "Filter records registered on or after this date",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "example": "2026-01-01"
+          },
+          {
+            "name": "registration_date_to",
+            "in": "query",
+            "description": "Filter records registered on or before this date",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "example": "2026-12-31"
           }
         ],
         "responses": {
@@ -341,7 +383,6 @@
       }
     }
   },
-
   "components": {
     "securitySchemes": {
       "JWTAuth": {
@@ -351,11 +392,9 @@
         "description": "JWT Authorization header using the Bearer scheme. Example: Authorization: Bearer <token>"
       }
     },
-
     "schemas": {
       "RegisterUser": {
         "type": "object",
-
         "required": [
           "firstName",
           "phone",
@@ -364,7 +403,6 @@
           "email",
           "password"
         ],
-
         "properties": {
           "firstName": {
             "type": "string",
@@ -412,12 +450,9 @@
           }
         }
       },
-
       "LoginUser": {
         "type": "object",
-
         "required": ["email", "password"],
-
         "properties": {
           "email": {
             "type": "string",
@@ -431,10 +466,8 @@
           }
         }
       },
-
       "UserResponse": {
         "type": "object",
-
         "properties": {
           "_id": {
             "type": "string",
@@ -493,10 +526,8 @@
           }
         }
       },
-
       "CreatePatient": {
         "type": "object",
-
         "required": [
           "firstName",
           "age",
@@ -507,7 +538,6 @@
           "district",
           "state"
         ],
-
         "properties": {
           "patient_id": {
             "type": "string",
@@ -598,7 +628,6 @@
             "example": []
           }
         },
-
         "example": {
           "name_titles": "Mr",
           "firstName": "John",
@@ -618,10 +647,8 @@
           "link_others": []
         }
       },
-
       "PatientResponse": {
         "type": "object",
-
         "properties": {
           "_id": {
             "type": "string",
@@ -717,10 +744,8 @@
           }
         }
       },
-
       "CreatePatientResponse": {
         "type": "object",
-
         "properties": {
           "success": {
             "type": "boolean",
@@ -739,10 +764,8 @@
           }
         }
       },
-
       "PatientList": {
         "type": "object",
-
         "properties": {
           "patient_id": {
             "type": "string",
@@ -771,10 +794,8 @@
           }
         }
       },
-
       "PatientListResponse": {
         "type": "object",
-
         "properties": {
           "success": {
             "type": "boolean",
@@ -799,10 +820,8 @@
           }
         }
       },
-
       "Pagination": {
         "type": "object",
-
         "properties": {
           "totalRecords": {
             "type": "integer",
@@ -832,7 +851,6 @@
       }
     }
   },
-
   "security": [
     {
       "JWTAuth": []
