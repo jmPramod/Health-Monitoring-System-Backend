@@ -4,7 +4,7 @@ import Joi from "joi";
 export interface PatientInterface extends Document {
   hospital_id: mongoose.Types.ObjectId;
   patient_id: string;
-  op_case_no: string;
+  op_case_no: string[];
   name_titles: string;
   firstName: string;
   last_name: string;
@@ -100,8 +100,8 @@ const patientSchema = new Schema<PatientInterface>(
       default: "",
     },
     op_case_no: {
-      type: String,
-      trim: true,
+      type: [{ type: String, trim: true }],
+      default: [],
     },
     ocupation: {
       type: String,
@@ -166,7 +166,7 @@ export const PatientValidationSchema = Joi.object({
   hospital_id: Joi.string().required(),
 
   patient_id: Joi.string().optional(),
-  op_case_no: Joi.string().optional(),
+  op_case_no: Joi.array().items(Joi.string().trim()).default([]).optional(),
   name_titles: Joi.string()
     .valid("Mr", "Mrs", "Miss", "Ms", "Dr", "Master", "Baby")
     .default("Mr"),

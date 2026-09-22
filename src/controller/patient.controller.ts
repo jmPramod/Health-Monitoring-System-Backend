@@ -56,17 +56,18 @@ export const createPatientController = async (
       const op_case_no = `OP-${datePrefix}-${opSeq}`;
 
       try {
-        const newPatient = new patientSchema({ ...value, op_case_no });
+        const newPatient = new patientSchema({
+          ...value,
+          op_case_no: [op_case_no],
+        });
         savePatient = await newPatient.save();
         lastErr = null;
-        break; // success, exit retry loop
+        break;
       } catch (err: any) {
-        // 11000 = MongoDB duplicate key error
         if (err.code === 11000 && err.keyPattern?.op_case_no) {
           lastErr = err;
-          continue; // retry with a fresh count
+          continue;
         }
-        // some other error (e.g. patient_id collision, validation) — don't retry
         throw err;
       }
     }
@@ -90,40 +91,41 @@ export const createPatientController = async (
     next(error);
   }
 };
+
 export const gerPatientListController = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.max(1, Number(req.query.limit) || 10);
     const skip = (page - 1) * limit;
 
-    const {
-      patient_id,
-      name,
-      mobile_no,
-      registration_date_from,
-      registration_date_to,
-    } = req.query;
+    const { search, registration_date_from, registration_date_to } = req.query;
 
-    // Build dynamic filter object
     const filter: Record<string, any> = {};
 
-    if (patient_id) {
-      filter.patient_id = { $regex: patient_id as string, $options: "i" };
+    // 1. Build Regex Filter with Sanitized Input
+    if (search && typeof search === "string") {
+      const trimmedSearch = search.trim();
+      const escapedSearch = trimmedSearch.replace(
+        /[-[\]{}()*+?.,\\^$|#\s]/g,
+        "\\$&",
+      );
+      const searchRegex = new RegExp(escapedSearch, "i");
+
+      filter.$or = [
+        { patient_id: searchRegex },
+        { patientId: searchRegex }, // Fallback for camelCase schema definitions
+        { firstName: searchRegex },
+        { last_name: searchRegex },
+        { mobile_no: searchRegex },
+        { op_case_no: searchRegex },
+      ];
     }
 
-    if (mobile_no) {
-      filter.mobile_no = { $regex: mobile_no as string, $options: "i" };
-    }
-
-    if (name) {
-      const nameRegex = { $regex: name as string, $options: "i" };
-      filter.$or = [{ firstName: nameRegex }, { last_name: nameRegex }];
-    }
-
+    // 2. Build Safe Date Boundaries
     if (registration_date_from || registration_date_to) {
       filter.registration_date = {};
 
@@ -134,9 +136,8 @@ export const gerPatientListController = async (
       }
 
       if (registration_date_to) {
-        // include the entire "to" day
         const toDate = new Date(registration_date_to as string);
-        toDate.setHours(23, 59, 59, 999);
+        toDate.setUTCHours(23, 59, 59, 999);
         filter.registration_date.$lte = toDate;
       }
     }
@@ -145,11 +146,12 @@ export const gerPatientListController = async (
       patientSchema
         .find(filter)
         .select(
-          "patient_id registration_date firstName last_name mobile_no -_id",
+          "patient_id registration_date firstName op_case_no last_name mobile_no -_id",
         )
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
+
       patientSchema.countDocuments(filter),
     ]);
 
@@ -161,11 +163,118 @@ export const gerPatientListController = async (
       pagination: {
         totalRecords: total,
         currentPage: page,
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math.ceil(total / limit) || 1,
         limit,
         hasNextPage: page < Math.ceil(total / limit),
         hasPreviousPage: page > 1,
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+export const updatePatientController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { patientId } = req.params;
+
+    const patient = await patientSchema.findById(patientId);
+    if (!patient) {
+      return next(createError(404, "Patient not found"));
+    }
+
+    // Don't allow these to be changed via this endpoint
+    delete req.body.hospital_id;
+    delete req.body.patient_id;
+    delete req.body.op_case_no;
+
+    // Make every field optional for edit, keep same rules
+    const UpdatePatientValidationSchema = PatientValidationSchema.fork(
+      Object.keys(PatientValidationSchema.describe().keys),
+      (schema) => schema.optional(),
+    );
+
+    const { error, value } = UpdatePatientValidationSchema.validate(req.body);
+    if (error) {
+      return next(createError(401, error.details[0].message));
+    }
+
+    // If mobile_no is being changed, make sure it's not already used by someone else
+    if (value.mobile_no && value.mobile_no !== patient.mobile_no) {
+      const existing_user = await patientSchema.findOne({
+        mobile_no: value.mobile_no,
+        _id: { $ne: patientId },
+      });
+      if (existing_user) {
+        return next(createError(401, "mobile number already exist"));
+      }
+    }
+
+    const updatedPatient = await patientSchema.findByIdAndUpdate(
+      patientId,
+      { $set: value },
+      { new: true, runValidators: true },
+    );
+
+    res.json({
+      success: true,
+      status: 200,
+      message: "Patient updated successfully",
+      data: updatedPatient,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+export const deletePatientController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { patientId } = req.params;
+
+    const patient = await patientSchema.findById(patientId);
+    if (!patient) {
+      return next(createError(404, "Patient not found"));
+    }
+
+    await patientSchema.findByIdAndDelete(patientId);
+
+    res.json({
+      success: true,
+      status: 200,
+      message: "Patient deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+export const getSinglePatientController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { patientId } = req.params;
+    console.log("patientId", patientId);
+
+    const patient = await patientSchema
+      .findById(patientId)
+      .populate("link_others", "patient_id firstName last_name mobile_no");
+
+    if (!patient) {
+      return next(createError(404, "Patient not found"));
+    }
+
+    res.json({
+      success: true,
+      status: 200,
+      message: "Patient fetched successfully",
+      data: patient,
     });
   } catch (error) {
     next(error);

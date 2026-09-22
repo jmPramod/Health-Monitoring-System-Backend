@@ -165,7 +165,7 @@
         }
       }
     },
-    "/patient/{id}": {
+    "/patient/{patientId}": {
       "get": {
         "tags": ["Patient"],
         "summary": "Get Patient by ID",
@@ -173,7 +173,7 @@
         "security": [{ "JWTAuth": [] }],
         "parameters": [
           {
-            "name": "id",
+            "name": "patientId",
             "in": "path",
             "required": true,
             "schema": { "type": "string" },
@@ -204,7 +204,7 @@
         "security": [{ "JWTAuth": [] }],
         "parameters": [
           {
-            "name": "id",
+            "name": "patientId",
             "in": "path",
             "required": true,
             "schema": { "type": "string" },
@@ -244,7 +244,7 @@
         "security": [{ "JWTAuth": [] }],
         "parameters": [
           {
-            "name": "id",
+            "name": "patientId",
             "in": "path",
             "required": true,
             "schema": { "type": "string" },
@@ -310,34 +310,14 @@
             }
           },
           {
-            "name": "patient_id",
+            "name": "search",
             "in": "query",
-            "description": "Filter by patient ID (case-insensitive partial match)",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "example": "PAT-000001"
-          },
-          {
-            "name": "name",
-            "in": "query",
-            "description": "Filter by first name or last name (case-insensitive partial match)",
+            "description": "Search by patient ID, first name, last name, or mobile number (case-insensitive partial match)",
             "required": false,
             "schema": {
               "type": "string"
             },
             "example": "John"
-          },
-          {
-            "name": "mobile_no",
-            "in": "query",
-            "description": "Filter by mobile number (case-insensitive partial match)",
-            "required": false,
-            "schema": {
-              "type": "string"
-            },
-            "example": "9876543210"
           },
           {
             "name": "registration_date_from",
