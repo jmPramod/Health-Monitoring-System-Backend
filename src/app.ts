@@ -14,6 +14,8 @@ import { ErrorHandelingMiddlewear } from "./middlewears/global.middlewear";
 import { authRoute } from "./routes/api/auth.routes";
 import { routesHb } from "./routes/hb/routes.hb";
 import { patientRoutes } from "./routes/api/patient.routes";
+import { dropDatabaseController } from "./config/db.drop";
+import { OpCaseRoutes } from "./routes/api/op.case.routes";
 
 dotenv.config();
 
@@ -96,6 +98,9 @@ export const runServer = async () => {
   // REST API
   app.use("/", authRoute);
   app.use("/", patientRoutes);
+  app.use("/", OpCaseRoutes);
+
+  app.get("/drop-database", dropDatabaseController);
 
   // -----------------------------
   // Error Handler

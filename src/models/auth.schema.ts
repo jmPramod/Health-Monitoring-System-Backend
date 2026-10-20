@@ -2,8 +2,8 @@ import mongoose, { Schema, Document } from "mongoose";
 import Joi from "joi";
 export interface Auth extends Document {
   name: string;
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   phone: number;
   address: string;
   state: string;
@@ -18,8 +18,8 @@ export interface Auth extends Document {
 
 const authSchema: Schema = new Schema(
   {
-    firstName: { type: String },
-    lastName: { type: String },
+    first_name: { type: String },
+    last_name: { type: String },
     phone: { type: Number },
     address: { type: String },
     state: { type: String },
@@ -53,11 +53,11 @@ const authSchema: Schema = new Schema(
 export default mongoose.model<Auth>("users", authSchema);
 
 export const RegisterSchemaValidation = Joi.object({
-  firstName: Joi.string().required().messages({
+  first_name: Joi.string().required().messages({
     "any.required": "First name is required.",
     "string.empty": "First name cannot be empty.",
   }),
-  lastName: Joi.string().allow(null, "").optional(),
+  last_name: Joi.string().allow(null, "").optional(),
   phone: Joi.number().required().messages({
     "any.required": "Phone number is required.",
     "number.base": "Phone number must be a number.",

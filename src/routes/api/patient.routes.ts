@@ -4,6 +4,7 @@ import {
   deletePatientController,
   gerPatientListController,
   getSinglePatientController,
+  linkSinglePatientController,
   updatePatientController,
 } from "../../controller/patient.controller";
 import { verifyUser } from "../../middlewears/verify.token.middlewears";
@@ -11,7 +12,7 @@ import { verifyUser } from "../../middlewears/verify.token.middlewears";
 export const patientRoutes = express.Router();
 
 patientRoutes.post("/patient", verifyUser, createPatientController);
-patientRoutes.put("/patient/:patientId", verifyUser, updatePatientController);
+patientRoutes.patch("/patient/:patientId", verifyUser, updatePatientController);
 
 patientRoutes.get(
   "/patient/:patientId",
@@ -23,5 +24,6 @@ patientRoutes.delete(
   verifyUser,
   deletePatientController,
 );
-
+// gives the list of patient on register page
 patientRoutes.get("/patient-list", verifyUser, gerPatientListController);
+patientRoutes.patch("/link-patient", verifyUser, linkSinglePatientController);

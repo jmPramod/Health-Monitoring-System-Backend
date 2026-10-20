@@ -2,7 +2,11 @@ import { NextFunction, Request, Response } from "express";
 import patientSchema, {
   PatientValidationSchema,
 } from "../models/patient.schema";
+
 import createError from "../middlewears/error.middlewears";
+import OpCaseLookUpSchema, {
+  OpCaseLookUpSchemaValidation,
+} from "../models/op_case_lkup";
 
 export const createPatientController = async (
   req: Request,
@@ -10,85 +14,132 @@ export const createPatientController = async (
   next: NextFunction,
 ) => {
   try {
-    const { mobile_no } = req.body;
-    req.body.hospital_id = "68b1d92f65d84c8fbf89abcd";
+    // const { mobile_no } = req.body;
 
-    const existing_user = await patientSchema.findOne({ mobile_no });
-    if (existing_user) {
-      return next(createError(401, "mobile number already exist"));
-    }
+    const hospital_id = "68b1d92f65d84c8fbf89abcd";
 
-    // ---- Generate patient_id (unchanged) ----
-    const lastPatient = await patientSchema
-      .findOne()
+    // 1. Check whether patient already exists
+    // const existingPatient = await patientSchema.findOne({ mobile_no });
+    // console.log("existingPatient", existingPatient);
+
+    // if (existingPatient) {
+    //   return next(createError(409, "Mobile number already exists"));
+    // }
+
+    // 2. Generate patient ID
+    const lastPatient = await OpCaseLookUpSchema.findOne()
       .sort({ createdAt: -1 })
       .select("patient_id");
 
     let nextNumber = 1;
-    if (lastPatient) {
-      nextNumber = parseInt(lastPatient.patient_id.replace("PAT-", ""), 10) + 1;
-    }
-    req.body.patient_id = `PAT-${nextNumber.toString().padStart(6, "0")}`;
 
-    // ---- Validate (without op_case_no yet) ----
-    const { error, value } = PatientValidationSchema.validate(req.body);
-    if (error) {
-      return next(createError(401, error.details[0].message));
+    if (lastPatient?.patient_id) {
+      nextNumber = parseInt(lastPatient.patient_id.replace("PAT", ""), 10) + 1;
     }
 
-    // ---- Generate op_case_no with retry-on-duplicate ----
+    const patient_id = `PAT${nextNumber.toString().padStart(6, "0")}`;
+
+    // 3. Prepare patient data
+    const patientRegisterBody = {
+      name_titles: req.body.name_titles,
+      first_name: req.body.first_name,
+      last_name: req.body.last_name,
+      registration_date: req.body.registration_date,
+      age: req.body.age,
+      gender: req.body.gender,
+      blood_group: req.body.blood_group,
+      mobile_no: req.body.mobile_no,
+      id_proof: req.body.id_proof,
+      ocupation: req.body.ocupation,
+      address: req.body.address,
+      city: req.body.city,
+      district: req.body.district,
+      state: req.body.state,
+      pin_code: req.body.pin_code,
+      link_others: req.body.link_others,
+      created_by: req.user_info.id,
+      patient_id,
+      hospital_id,
+    };
+
+    // 4. Validate patient data
+    const { error: patientError, value: patientValue } =
+      PatientValidationSchema.validate(patientRegisterBody);
+
+    if (patientError) {
+      return next(createError(400, patientError.details[0].message));
+    }
+
+    // 5. Generate OP case number
     const now = new Date();
+
     const yy = now.getFullYear().toString().slice(-2);
     const mm = (now.getMonth() + 1).toString().padStart(2, "0");
     const dd = now.getDate().toString().padStart(2, "0");
+
     const datePrefix = `${yy}${mm}${dd}`;
 
-    const MAX_RETRIES = 5;
-    let savePatient;
-    let lastErr: any = null;
+    const todaysCount = await patientSchema.countDocuments({
+      op_case_no: { $regex: `^OP${datePrefix}-` },
+    });
 
-    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      const todaysCount = await patientSchema.countDocuments({
-        op_case_no: { $regex: `^OP-${datePrefix}-` },
-      });
+    const opSeq = (todaysCount + 1).toString().padStart(4, "0");
+    const op_case_no = `OP${datePrefix}-${opSeq}`;
 
-      const opSeq = (todaysCount + 1 + attempt).toString().padStart(4, "0");
-      const op_case_no = `OP-${datePrefix}-${opSeq}`;
+    // 6. CREATE PATIENT FIRST
+    const newPatient = new patientSchema({
+      ...patientValue,
+      op_case_no: op_case_no,
+    });
 
-      try {
-        const newPatient = new patientSchema({
-          ...value,
-          op_case_no: [op_case_no],
-        });
-        savePatient = await newPatient.save();
-        lastErr = null;
-        break;
-      } catch (err: any) {
-        if (err.code === 11000 && err.keyPattern?.op_case_no) {
-          lastErr = err;
-          continue;
-        }
-        throw err;
-      }
+    const savedPatient = await newPatient.save();
+    console.log(" req.user_info", req.user_info);
+
+    // 7. Prepare OP case lookup using saved patient details
+    const opCaseNoBody = {
+      op_case_no,
+      patient_id: savedPatient.patient_id,
+
+      visit_type: req.body.visit_type,
+      created_by: req.user_info.id,
+      visit_date: new Date(),
+
+      registration_date: savedPatient.registration_date,
+      first_name: savedPatient.first_name,
+      last_name: savedPatient.last_name,
+      mobile_no: savedPatient.mobile_no,
+      hospital_id,
+    };
+    console.log("opCaseNoBody", opCaseNoBody);
+
+    // 8. Validate OP case lookup
+    const { error: opCaseError, value: opCaseValue } =
+      OpCaseLookUpSchemaValidation.validate(opCaseNoBody);
+
+    if (opCaseError) {
+      await patientSchema.findByIdAndDelete(savedPatient._id);
+      return next(createError(400, opCaseError.details[0].message));
     }
 
-    if (!savePatient) {
-      return next(
-        createError(
-          500,
-          "Could not generate a unique OP case number, please try again",
-        ),
-      );
-    }
+    // 9. CREATE OP CASE LOOKUP SECOND
+    const savedOpCase = await OpCaseLookUpSchema.create(opCaseValue);
 
-    res.json({
+    // 10. Response
+    return res.status(201).json({
       success: true,
       status: 201,
-      message: "New Patient created",
-      data: savePatient,
+      message: "New patient created successfully",
+      data: {
+        patient: savedPatient,
+        op_case_lookup: savedOpCase,
+      },
     });
-  } catch (error) {
-    next(error);
+  } catch (error: any) {
+    if (error.code === 11000) {
+      return next(createError(409, "Duplicate patient or OP case number"));
+    }
+
+    return next(error);
   }
 };
 
@@ -118,7 +169,7 @@ export const gerPatientListController = async (
       filter.$or = [
         { patient_id: searchRegex },
         { patientId: searchRegex }, // Fallback for camelCase schema definitions
-        { firstName: searchRegex },
+        { first_name: searchRegex },
         { last_name: searchRegex },
         { mobile_no: searchRegex },
         { op_case_no: searchRegex },
@@ -146,7 +197,7 @@ export const gerPatientListController = async (
       patientSchema
         .find(filter)
         .select(
-          "patient_id registration_date firstName op_case_no last_name mobile_no -_id",
+          "patient_id registration_date first_name op_case_no last_name mobile_no -_id",
         )
         .sort({ createdAt: -1 })
         .skip(skip)
@@ -181,7 +232,7 @@ export const updatePatientController = async (
   try {
     const { patientId } = req.params;
 
-    const patient = await patientSchema.findById(patientId);
+    const patient = await patientSchema.findOne({ patient_id: patientId });
     if (!patient) {
       return next(createError(404, "Patient not found"));
     }
@@ -213,8 +264,8 @@ export const updatePatientController = async (
       }
     }
 
-    const updatedPatient = await patientSchema.findByIdAndUpdate(
-      patientId,
+    const updatedPatient = await patientSchema.findOneAndUpdate(
+      { patient_id: patientId },
       { $set: value },
       { new: true, runValidators: true },
     );
@@ -237,12 +288,12 @@ export const deletePatientController = async (
   try {
     const { patientId } = req.params;
 
-    const patient = await patientSchema.findById(patientId);
+    const patient = await patientSchema.findOne({ patient_id: patientId });
     if (!patient) {
       return next(createError(404, "Patient not found"));
     }
 
-    await patientSchema.findByIdAndDelete(patientId);
+    await patientSchema.findOneAndDelete({ patient_id: patientId });
 
     res.json({
       success: true,
@@ -263,8 +314,8 @@ export const getSinglePatientController = async (
     console.log("patientId", patientId);
 
     const patient = await patientSchema
-      .findById(patientId)
-      .populate("link_others", "patient_id firstName last_name mobile_no");
+      .findOne({ patient_id: patientId })
+      .populate("link_others", "patient_id first_name last_name mobile_no");
 
     if (!patient) {
       return next(createError(404, "Patient not found"));
@@ -274,6 +325,60 @@ export const getSinglePatientController = async (
       success: true,
       status: 200,
       message: "Patient fetched successfully",
+      data: patient,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+export const linkSinglePatientController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { owener, linkedPerson, type } = req.body;
+    console.log(owener, linkedPerson, type);
+
+    // Find the owner patient
+    const patient = await patientSchema.findById(owener);
+
+    if (!patient) {
+      return next(createError(404, "Owner patient does not exist"));
+    }
+
+    // Find the patient to link
+    const linkedPatient = await patientSchema.findById(linkedPerson);
+
+    if (!linkedPatient) {
+      return next(createError(404, "Patient to link does not exist"));
+    }
+
+    // Prevent linking a patient to themselves
+    if (owener === linkedPerson) {
+      return next(createError(400, "A patient cannot be linked to themselves"));
+    }
+
+    // Prevent duplicate links
+    const alreadyLinked = patient.link_others.some(
+      (item) => item.id.toString() === linkedPerson,
+    );
+
+    if (alreadyLinked) {
+      return next(createError(409, "Patients are already linked"));
+    }
+
+    // Add the linked patient
+    patient.link_others.push({
+      id: linkedPatient._id,
+      relation: type,
+    });
+
+    await patient.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Patient linked successfully",
       data: patient,
     });
   } catch (error) {

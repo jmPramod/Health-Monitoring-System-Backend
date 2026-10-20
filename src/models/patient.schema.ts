@@ -4,9 +4,9 @@ import Joi from "joi";
 export interface PatientInterface extends Document {
   hospital_id: mongoose.Types.ObjectId;
   patient_id: string;
-  op_case_no: string[];
+  op_case_no: string;
   name_titles: string;
-  firstName: string;
+  first_name: string;
   last_name: string;
 
   registration_date: Date;
@@ -28,7 +28,12 @@ export interface PatientInterface extends Document {
   pin_code: number;
 
   // Related Patients
-  link_others: mongoose.Types.ObjectId[];
+  link_others: {
+    id: mongoose.Types.ObjectId;
+    relation: string;
+  }[];
+  created_by: string;
+  updated_by: string;
 
   createdAt: Date;
   updatedAt: Date;
@@ -55,7 +60,7 @@ const patientSchema = new Schema<PatientInterface>(
       default: "Mr",
     },
 
-    firstName: {
+    first_name: {
       type: String,
 
       trim: true,
@@ -74,7 +79,7 @@ const patientSchema = new Schema<PatientInterface>(
 
     age: {
       type: Number,
-
+      default: null,
       min: 0,
       max: 120,
     },
@@ -100,8 +105,9 @@ const patientSchema = new Schema<PatientInterface>(
       default: "",
     },
     op_case_no: {
-      type: [{ type: String, trim: true }],
-      default: [],
+      type: String,
+      trim: true,
+      unique: true,
     },
     ocupation: {
       type: String,
@@ -111,37 +117,52 @@ const patientSchema = new Schema<PatientInterface>(
 
     address: {
       type: String,
-
+      default: "",
       trim: true,
     },
 
     city: {
       type: String,
-
+      default: "",
       trim: true,
     },
 
     district: {
       type: String,
-
+      default: "",
       trim: true,
     },
 
     state: {
       type: String,
-
+      default: "",
+      trim: true,
+    },
+    created_by: {
+      type: String,
+      default: "",
       trim: true,
     },
 
     pin_code: {
       type: Number,
+      default: null,
     },
 
     // Related Patients
+    // Related Patients
     link_others: [
       {
-        type: Schema.Types.ObjectId,
-        ref: "Patient",
+        id: {
+          type: Schema.Types.ObjectId,
+          ref: "Patient",
+        },
+        relation: {
+          type: String,
+
+          trim: true,
+        },
+        _id: false,
       },
     ],
   },
@@ -154,7 +175,7 @@ const patientSchema = new Schema<PatientInterface>(
 patientSchema.index({ hospital_id: 1, patient_id: 1 }, { unique: true });
 patientSchema.index({ hospital_id: 1, op_case_no: 1 }, { unique: true });
 patientSchema.index({
-  firstName: "text",
+  first_name: "text",
   last_name: "text",
   mobile_no: "text",
 });
@@ -165,13 +186,14 @@ export default mongoose.model<PatientInterface>("Patient", patientSchema);
 export const PatientValidationSchema = Joi.object({
   hospital_id: Joi.string().required(),
 
+  created_by: Joi.string().optional(),
   patient_id: Joi.string().optional(),
-  op_case_no: Joi.array().items(Joi.string().trim()).default([]).optional(),
+  op_case_no: Joi.string().optional(),
   name_titles: Joi.string()
     .valid("Mr", "Mrs", "Miss", "Ms", "Dr", "Master", "Baby")
     .default("Mr"),
 
-  firstName: Joi.string().required(),
+  first_name: Joi.string().required(),
 
   last_name: Joi.string().allow("").optional(),
 
@@ -202,7 +224,12 @@ export const PatientValidationSchema = Joi.object({
   pin_code: Joi.number().optional(),
 
   link_others: Joi.array()
-    .items(Joi.string().hex().length(24))
+    .items(
+      Joi.object({
+        id: Joi.string().hex().length(24).optional(),
+        relation: Joi.string().trim().optional(),
+      }),
+    )
     .default([])
     .optional(),
 });
