@@ -619,7 +619,7 @@
             "type": "string",
             "example": "John"
           },
-          "lastName": {
+          "last_name": {
             "type": "string",
             "example": "Doe"
           },
@@ -969,7 +969,7 @@
             "type": "string",
             "example": "John"
           },
-          "lastName": {
+          "last_name": {
             "type": "string",
             "example": "Doe"
           },

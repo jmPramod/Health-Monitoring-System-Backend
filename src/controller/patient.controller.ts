@@ -7,6 +7,7 @@ import createError from "../middlewears/error.middlewears";
 import OpCaseLookUpSchema, {
   OpCaseLookUpSchemaValidation,
 } from "../models/op_case_lkup";
+import mongoose from "mongoose";
 
 export const createPatientController = async (
   req: Request,
@@ -85,46 +86,58 @@ export const createPatientController = async (
 
     const opSeq = (todaysCount + 1).toString().padStart(4, "0");
     const op_case_no = `OP${datePrefix}-${opSeq}`;
-
-    // 6. CREATE PATIENT FIRST
-    const newPatient = new patientSchema({
-      ...patientValue,
-      op_case_no: op_case_no,
-    });
-
-    const savedPatient = await newPatient.save();
-    console.log(" req.user_info", req.user_info);
-
-    // 7. Prepare OP case lookup using saved patient details
+    // In your original code, you were saving the patient first and then creating the OP case lookup. If the OP case creation failed due to a database error, the patient record could remain in the database without an OP case. To fix this, I moved the OP case validation before saving the patient, so if the OP case data is invalid, the patient will not be saved. Then, I used a MongoDB transaction to save both the patient and the OP case lookup together. Both database operations use the same session, which ensures that if both operations succeed, the transaction is committed and both records are saved. However, if either operation fails, the transaction is rolled back, and neither record is saved. This prevents incomplete patient registrations and eliminates the need to manually delete the patient when OP case creation fails.
+    // 6. Prepare OP case lookup before saving the patient
     const opCaseNoBody = {
       op_case_no,
-      patient_id: savedPatient.patient_id,
-
+      patient_id,
       visit_type: req.body.visit_type,
       created_by: req.user_info.id,
       visit_date: new Date(),
 
-      registration_date: savedPatient.registration_date,
-      first_name: savedPatient.first_name,
-      last_name: savedPatient.last_name,
-      mobile_no: savedPatient.mobile_no,
+      registration_date: patientValue.registration_date,
+      first_name: patientValue.first_name,
+      last_name: patientValue.last_name,
+      mobile_no: patientValue.mobile_no,
       hospital_id,
     };
-    console.log("opCaseNoBody", opCaseNoBody);
 
-    // 8. Validate OP case lookup
+    // 7. Validate OP case lookup first
     const { error: opCaseError, value: opCaseValue } =
       OpCaseLookUpSchemaValidation.validate(opCaseNoBody);
 
     if (opCaseError) {
-      await patientSchema.findByIdAndDelete(savedPatient._id);
       return next(createError(400, opCaseError.details[0].message));
     }
 
-    // 9. CREATE OP CASE LOOKUP SECOND
-    const savedOpCase = await OpCaseLookUpSchema.create(opCaseValue);
+    // 8. Start MongoDB transaction
+    const session = await mongoose.startSession();
 
-    // 10. Response
+    let savedPatient: any;
+    let savedOpCase: any;
+
+    try {
+      await session.withTransaction(async () => {
+        // Create patient inside the transaction
+        const newPatient = new patientSchema({
+          ...patientValue,
+          op_case_no,
+        });
+
+        savedPatient = await newPatient.save({ session });
+
+        // Create OP case lookup inside the same transaction
+        const createdOpCases = await OpCaseLookUpSchema.create([opCaseValue], {
+          session,
+        });
+
+        savedOpCase = createdOpCases[0];
+      });
+    } finally {
+      await session.endSession();
+    }
+
+    // 9. Return response only after both records are committed
     return res.status(201).json({
       success: true,
       status: 201,
